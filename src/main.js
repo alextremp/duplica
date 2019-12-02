@@ -14,15 +14,16 @@ let clientMeikit
 
 let cleanFolders = []
 
-run()
+const main = ({source, options}) => run({source, options})
   .then(() => LOG('[done]'))
   .catch(error =>  LOG('[error]', error))
   .then(() => cleanFolders.forEach(folder => clean({folder})))
 
-async function run() {
-  const {source, target} = await ask()
-  const {targetFolder, templateFolder} = prepare({source, target})
-  cleanFolders.push(templateFolder)
+async function run({source, options}) {
+  LOG('[meikit]', source, options)
+  const {target} = await ask()
+  const {targetFolder, templateFolder} = prepare({source, target, ...options})
+  !options.local && cleanFolders.push(templateFolder)
   clientMeikit = loadClientMeikit({templateFolder})
   const model = await createModel({templateFolder})
   const sourceBaseFolder = path.join(templateFolder, 'template')
@@ -38,7 +39,8 @@ async function run() {
     model,
     file: templateFile,
     sourceBaseFolder,
-    targetBaseFolder: targetFolder
+    targetBaseFolder: targetFolder,
+    test: options.test
   }))
 }
 
@@ -46,25 +48,28 @@ async function ask() {
   return inquirer.prompt(privateMeikit.questions)
 }
 
-function prepare({source, target}) {
+function prepare({source, target, local, test}) {
   LOG('[prepare]', source, target)
-  const targetFolder = path.resolve(path.join(PWD, target))
-  const templateFolder = `${targetFolder}_meikit_template`
 
-  if (fs.existsSync(targetFolder)) {
+  const targetFolder = path.resolve(path.join(PWD, target))
+  if (!test && fs.existsSync(targetFolder)) {
     throw new Error('Already exists: ' + targetFolder)
   }
-  if (fs.existsSync(templateFolder)) {
-    throw new Error('Already exists: ' + templateFolder)
+  !test && fs.ensureDirSync(targetFolder)
+
+  let templateFolder
+  if (!local) {
+    templateFolder = `${targetFolder}_meikit_template`
+    if (fs.existsSync(templateFolder)) {
+      throw new Error('Already exists: ' + templateFolder)
+    }
+    fs.ensureDirSync(templateFolder)
+    const command = `git clone ${source} ${templateFolder}`
+    LOG('[loading source]', command)
+    shell.exec(command)
+  } else {
+    templateFolder = path.resolve(path.join(PWD, source))
   }
-
-  fs.ensureDirSync(targetFolder)
-  fs.ensureDirSync(templateFolder)
-
-  const command = `git clone ${source} ${templateFolder}`
-  LOG('[loading source]', command)
-  shell.exec(command)
-
   return {
     targetFolder,
     templateFolder
@@ -122,8 +127,7 @@ function loadFilePaths({folder}) {
   return accumulated
 }
 
-
-function processFile({model, file, sourceBaseFolder, targetBaseFolder}) {
+function processFile({model, file, sourceBaseFolder, targetBaseFolder, test}) {
   const shortPath = (path) => path.replace(sourceBaseFolder + '/', '')
   const sourceShortPath = shortPath(file)
 
@@ -141,14 +145,16 @@ function processFile({model, file, sourceBaseFolder, targetBaseFolder}) {
   const source = fs.readFileSync(file, {encoding: 'utf8'})
   const target = isTemplate ? handlebars.compile(source)(model) : source
 
-  const targetDestination = path.join(targetBaseFolder, targetShortPath)
-  const targetDestinationFolder = path.dirname(targetDestination)
+  if (!test) {
+    const targetDestination = path.join(targetBaseFolder, targetShortPath)
+    const targetDestinationFolder = path.dirname(targetDestination)
 
-  if (!fs.existsSync(targetDestinationFolder)) {
-    fs.ensureDirSync(targetDestinationFolder)
+    if (!fs.existsSync(targetDestinationFolder)) {
+      fs.ensureDirSync(targetDestinationFolder)
+    }
+
+    fs.writeFileSync(targetDestination, target, {encoding: 'utf8'})
   }
-
-  fs.writeFileSync(targetDestination, target, {encoding: 'utf8'})
 }
 
 function isFiltered({file, model}) {
@@ -160,3 +166,5 @@ function isFiltered({file, model}) {
     model
   }))
 }
+
+module.exports = main
