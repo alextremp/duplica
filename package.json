@@ -1,12 +1,33 @@
 {
-  "name": "meik",
-  "version": "1.0.0",
+  "name": "meikit",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "bin": "./index.js",
   "scripts": {
+    "start": "babel-node index.js",
+    "phoenix": "rm -Rf node_modules && rm -Rf package-lock.json && npm i",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "keywords": [
+    "scaffold",
+    "templates",
+    "production"
+  ],
+  "author": "Alex Castells",
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^8.1.0",
+    "handlebars": "^4.5.3",
+    "handlebars-helpers": "^0.10.0",
+    "inquirer": "^7.0.0",
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.7.4",
+    "@babel/core": "^7.7.4",
+    "@babel/node": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "@babel/register": "^7.7.4",
+    "mocha": "^6.2.2"
+  }
 }
