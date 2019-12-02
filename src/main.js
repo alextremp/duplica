@@ -9,7 +9,8 @@ require('handlebars-helpers')({handlebars})
 const PWD = process.cwd()
 const LOG = console.log
 
-const meikit = require('./meikit')
+const privateMeikit = require('./meikit')
+let clientMeikit
 
 let cleanFolders = []
 
@@ -22,6 +23,7 @@ async function run() {
   const {source, target} = await ask()
   const {targetFolder, templateFolder} = prepare({source, target})
   cleanFolders.push(templateFolder)
+  clientMeikit = loadClientMeikit({templateFolder})
   const model = await createModel({templateFolder})
   const sourceBaseFolder = path.join(templateFolder, 'template')
 
@@ -41,7 +43,7 @@ async function run() {
 }
 
 async function ask() {
-  return inquirer.prompt(meikit.questions)
+  return inquirer.prompt(privateMeikit.questions)
 }
 
 function prepare({source, target}) {
@@ -76,22 +78,26 @@ function clean({folder}) {
   }
 }
 
-async function createModel({templateFolder}) {
-  const meikitFile = path.join(templateFolder, 'meikit.js')
-  if (!fs.existsSync(meikitFile)) {
-    throw new Error('MeikIT configuration does not exist: ' + meikitFile)
+function loadClientMeikit({templateFolder}) {
+  const clientMeikitFile = path.join(templateFolder, 'meikit.js')
+  if (!fs.existsSync(clientMeikitFile)) {
+    throw new Error('MeikIT configuration does not exist: ' + clientMeikitFile)
   }
-  const meikit = require(meikitFile)
+  const meikit = require(clientMeikitFile)
   if (!meikit.questions) {
-    throw new Error('MeikIT configuration has no questions: ' + meikitFile)
+    throw new Error('MeikIT configuration has no questions: ' + clientMeikitFile)
   }
-  return inquirer.prompt(meikit.questions)
+  return meikit
+}
+
+async function createModel({templateFolder}) {
+  return inquirer.prompt(clientMeikit.questions)
     .then(responses => {
       const model = {...responses}
-      if (meikit.customProperties) {
+      if (clientMeikit.customProperties) {
         let template
-        for (const customProperty in meikit.customProperties) {
-          template = handlebars.compile(meikit.customProperties[customProperty])
+        for (const customProperty in clientMeikit.customProperties) {
+          template = handlebars.compile(clientMeikit.customProperties[customProperty])
           model[customProperty] = template(model)
         }
       }
@@ -116,14 +122,21 @@ function loadFilePaths({folder}) {
   return accumulated
 }
 
+
 function processFile({model, file, sourceBaseFolder, targetBaseFolder}) {
   const shortPath = (path) => path.replace(sourceBaseFolder + '/', '')
+  const sourceShortPath = shortPath(file)
+
+  if (isFiltered({file: sourceShortPath, model})) {
+    LOG('[excluded]', sourceShortPath)
+    return
+  }
+
   const isTemplate = file.endsWith('.meikit')
   const targetFile = handlebars.compile(file)(model).replace(/.meikit$/, '')
 
-  const sourceShortPath = shortPath(file)
   const targetShortPath = shortPath(targetFile)
-  LOG('[meikit] ', sourceShortPath, '=>', targetShortPath)
+  LOG('[meikit]', sourceShortPath, '=>', targetShortPath)
 
   const source = fs.readFileSync(file, {encoding: 'utf8'})
   const target = isTemplate ? handlebars.compile(source)(model) : source
@@ -136,4 +149,14 @@ function processFile({model, file, sourceBaseFolder, targetBaseFolder}) {
   }
 
   fs.writeFileSync(targetDestination, target, {encoding: 'utf8'})
+}
+
+function isFiltered({file, model}) {
+  if (!clientMeikit.exclude) {
+    return false
+  }
+  return clientMeikit.exclude.some(filter => filter({
+    file,
+    model
+  }))
 }
