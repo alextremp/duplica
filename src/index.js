@@ -1,3 +1,3 @@
 Promise.resolve()
-  .then(require('./src/main'))
+  .then(require('./main'))
   .catch(error => console.log(error))

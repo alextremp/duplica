@@ -2,9 +2,13 @@
   "name": "meikit",
   "version": "0.0.1",
   "description": "",
-  "bin": "./index.js",
+  "main": "./dist",
+  "bin": "./dist/cli.js",
   "scripts": {
-    "start": "babel-node index.js",
+    "build": "npm run clean && babel src --out-dir dist",
+    "prepack": "npm run build",
+    "start": "babel-node src/index.js",
+    "clean": "rm -Rf dist",
     "phoenix": "rm -Rf node_modules && rm -Rf package-lock.json && npm i",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

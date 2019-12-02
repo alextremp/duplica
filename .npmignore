@@ -1,0 +1,10 @@
+src
+coverage
+.travis.yml
+.idea
+.eslintignore
+.github
+.babelrc
+resources
+package
+*.tgz
