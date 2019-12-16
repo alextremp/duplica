@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
-const main = require('./main')
-const meow = require('meow')
+import {main} from './main'
+import meow from 'meow'
+import {logger} from './logger'
 
-const cli = meow(`
+const LOG = logger.logger('CLI')
+
+const cli = meow(
+  `
 Usage
 $ npx meik [path to meik template] [options]
 
@@ -16,27 +20,29 @@ Examples
 $ npx meik https://github.com/meikit/meikit-sample-js-lib-template.git
 
 $ npx meik ./my-template --local
-`, {
-  flags: {
-    local: {
-      type: 'boolean',
-      default: false
-    },
-    test: {
-      type: 'boolean',
-      default: false
+`,
+  {
+    flags: {
+      local: {
+        type: 'boolean',
+        default: false
+      },
+      test: {
+        type: 'boolean',
+        default: false
+      }
     }
   }
-})
-
+)
 if (!(cli.input.length > 0 && cli.input[0])) {
   cli.showHelp(1)
 }
 
 Promise.resolve()
-  .then(() => main({
-    source: cli.input[0],
-    options: cli.flags
-  }))
-  .catch(error => console.error(error))
-
+  .then(() =>
+    main({
+      source: cli.input[0],
+      options: cli.flags
+    })
+  )
+  .catch(error => LOG.error(() => ['An error occurred', error]))
