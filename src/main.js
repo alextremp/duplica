@@ -11,8 +11,8 @@ handlebarsHelpers({handlebars})
 const PWD = process.cwd()
 const LOG = logger.logger('Main')
 
-const privateMeikit = require('./meikit')
-let clientMeikit
+const privateDuplica = require('./duplica')
+let clientDuplica
 
 const main = ({source, options}) =>
   run({source, options})
@@ -27,7 +27,7 @@ async function run({source, options}) {
     target,
     ...options
   })
-  clientMeikit = loadClientMeikit({templateFolder})
+  clientDuplica = loadClientDuplica({templateFolder})
   const model = await createModel({templateFolder})
   const sourceBaseFolder = path.join(templateFolder, 'template')
 
@@ -49,7 +49,7 @@ async function run({source, options}) {
 }
 
 async function ask() {
-  return inquirer.prompt(privateMeikit.questions)
+  return inquirer.prompt(privateDuplica.questions)
 }
 
 async function prepare({source, target, local, test}) {
@@ -75,7 +75,7 @@ async function prepare({source, target, local, test}) {
   let templateFolder
   if (!local) {
     templateFolder = fs.mkdtempSync(
-      path.join(os.tmpdir(), `meikit-${Date.now()}-`)
+      path.join(os.tmpdir(), `duplica-${Date.now()}-`)
     )
     const command = `git clone ${source} ${templateFolder}`
     LOG.info(() => ['Loading source', {command}])
@@ -89,28 +89,30 @@ async function prepare({source, target, local, test}) {
   }
 }
 
-function loadClientMeikit({templateFolder}) {
-  const clientMeikitFile = path.join(templateFolder, 'meikit.js')
-  if (!fs.existsSync(clientMeikitFile)) {
-    throw new Error('MeikIT configuration does not exist: ' + clientMeikitFile)
-  }
-  const meikit = require(clientMeikitFile)
-  if (!meikit.questions) {
+function loadClientDuplica({templateFolder}) {
+  const clientDuplicaFile = path.join(templateFolder, 'duplica.js')
+  if (!fs.existsSync(clientDuplicaFile)) {
     throw new Error(
-      'MeikIT configuration has no questions: ' + clientMeikitFile
+      'Duplica configuration does not exist: ' + clientDuplicaFile
     )
   }
-  return meikit
+  const duplica = require(clientDuplicaFile)
+  if (!duplica.questions) {
+    throw new Error(
+      'Duplica configuration has no questions: ' + clientDuplicaFile
+    )
+  }
+  return duplica
 }
 
 async function createModel({templateFolder}) {
-  return inquirer.prompt(clientMeikit.questions).then(responses => {
+  return inquirer.prompt(clientDuplica.questions).then(responses => {
     const model = {...responses}
-    if (clientMeikit.customProperties) {
+    if (clientDuplica.customProperties) {
       let template
-      for (const customProperty in clientMeikit.customProperties) {
+      for (const customProperty in clientDuplica.customProperties) {
         template = handlebars.compile(
-          clientMeikit.customProperties[customProperty]
+          clientDuplica.customProperties[customProperty]
         )
         model[customProperty] = template(model)
       }
@@ -145,10 +147,10 @@ function processFile({model, file, sourceBaseFolder, targetBaseFolder, test}) {
     return
   }
 
-  const isTemplate = file.endsWith('.meikit')
+  const isTemplate = file.endsWith('.duplica')
   const targetFile = handlebars
     .compile(file)(model)
-    .replace(/.meikit$/, '')
+    .replace(/.duplica$/, '')
 
   const targetShortPath = shortPath(targetFile)
   LOG.info(() => [sourceShortPath + '=>' + targetShortPath])
@@ -169,10 +171,10 @@ function processFile({model, file, sourceBaseFolder, targetBaseFolder, test}) {
 }
 
 function isFiltered({file, model}) {
-  if (!clientMeikit.exclude) {
+  if (!clientDuplica.exclude) {
     return false
   }
-  return clientMeikit.exclude.some(filter =>
+  return clientDuplica.exclude.some(filter =>
     filter({
       file,
       model

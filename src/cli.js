@@ -12,14 +12,15 @@ Usage
 $ npx duplica [path to duplica template] [options]
 
 Options
-  --local The path to duplica template is a local folder instead of a Git URL
-  --test  Nothing to be generated, just test the template
+  --local   The path to duplica template is a local folder instead of a Git URL
+  --test    Nothing to be generated, just test the template
+  --verbose Enable console logs
 
 Examples
 
 $ npx duplica https://github.com/alextremp/duplica-open-source-js-lib-template.git
 
-$ npx duplica ./my-local-duplica-template --local
+$ npx duplica ./my-local-duplica-template --local --verbose
 `,
   {
     flags: {
@@ -28,6 +29,10 @@ $ npx duplica ./my-local-duplica-template --local
         default: false
       },
       test: {
+        type: 'boolean',
+        default: false
+      },
+      verbose: {
         type: 'boolean',
         default: false
       }
