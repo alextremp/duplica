@@ -8,6 +8,9 @@ import handlebars from 'handlebars'
 import handlebarsHelpers from 'handlebars-helpers'
 handlebarsHelpers({handlebars})
 
+// todo initialize logger depending on --verbose prop
+// todo add brusc ioc
+// todo no need for isTemplate func, better ask a function for 'statics' to copy directly
 const PWD = process.cwd()
 const LOG = logger.logger('Main')
 
