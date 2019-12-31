@@ -9,17 +9,17 @@ const LOG = logger.logger('CLI')
 const cli = meow(
   `
 Usage
-$ npx meik [path to meik template] [options]
+$ npx duplica [path to duplica template] [options]
 
 Options
-  --local The path to meik template is a local folder instead of a Git URL
+  --local The path to duplica template is a local folder instead of a Git URL
   --test  Nothing to be generated, just test the template
 
 Examples
 
-$ npx meik https://github.com/meikit/meikit-sample-js-lib-template.git
+$ npx duplica https://github.com/alextremp/duplica-open-source-js-lib-template.git
 
-$ npx meik ./my-template --local
+$ npx duplica ./my-local-duplica-template --local
 `,
   {
     flags: {

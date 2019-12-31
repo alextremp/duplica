@@ -1,6 +1,6 @@
 {
-  "name": "meikit",
-  "version": "0.0.5",
+  "name": "duplica",
+  "version": "0.0.1",
   "description": "",
   "bin": "./dist/cli.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "handlebars": "^4.5.3",
     "handlebars-helpers": "^0.10.0",
     "inquirer": "^7.0.0",
-    "logda": "0.0.1",
+    "logda": "^1.1.0",
     "meow": "^5.0.0",
     "shelljs": "^0.8.3"
   },
