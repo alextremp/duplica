@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run clean && babel src --out-dir dist",
     "prepack": "npm run build",
-    "start": "babel-node src/cli.js",
+    "local": "babel-node src/main/cli.js",
     "lint": "npm run lint",
     "clean": "rm -Rf dist",
     "phoenix": "rm -Rf node_modules && rm -Rf package-lock.json && npm i",
@@ -22,12 +22,12 @@
   "license": "ISC",
   "dependencies": {
     "@babel/runtime": "^7.7.4",
-    "brusc": "^1.0.3",
+    "brusc": "^1.0.5",
     "fs-extra": "^8.1.0",
     "handlebars": "^4.5.3",
     "handlebars-helpers": "^0.10.0",
     "inquirer": "^7.0.0",
-    "logda": "^1.1.0",
+    "logda": "^1.2.0",
     "meow": "^5.0.0",
     "shelljs": "^0.8.3"
   },
@@ -39,7 +39,10 @@
     "@babel/preset-env": "^7.7.4",
     "@babel/register": "^7.7.4",
     "@s-ui/lint": "^3.14.0",
+    "chai": "^4.2.0",
+    "codecov": "^3.6.1",
     "mocha": "^6.2.2",
+    "nyc": "^15.0.0",
     "versiona": "^4.0.0"
   },
   "eslintConfig": {

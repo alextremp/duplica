@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-
 import {main} from './main'
 import meow from 'meow'
 import {logger} from './logger'
 
-const LOG = logger.logger('CLI')
+const LOG = logger.logger('cli')
 
 const cli = meow(
   `
@@ -20,7 +19,7 @@ Examples
 
 $ npx duplica https://github.com/alextremp/duplica-open-source-js-lib-template.git
 
-$ npx duplica ./my-local-duplica-template --local --verbose
+$ npx duplica ./my-local-duplica-template --local --logs
 `,
   {
     flags: {
@@ -32,7 +31,7 @@ $ npx duplica ./my-local-duplica-template --local --verbose
         type: 'boolean',
         default: false
       },
-      verbose: {
+      logs: {
         type: 'boolean',
         default: false
       }
